@@ -17,19 +17,34 @@ export const CreateUser = mutation({
                 name: args.name,
                 email: args.email,
                 picture: args.picture,
-                uid: args.uid
+                uid: args.uid,
+                token:50000
             });
             console.log(result);
         }
     }
 })
 
-export const GetUser = query({
+export const getUser = query({
+    args: { email: v.string() },
+    handler: async (ctx, args) => {
+      const user = await ctx.db
+        .query("users")
+        .filter((q) => q.eq(q.field("email"), args.email))
+        .collect();
+      return user[0] || null;
+    },
+  });
+
+export const UpdateToken = mutation({
     args:{
-        email:v.string()
+        token:v.number(),
+        userId:v.id('users')
     },
     handler:async(ctx,args)=>{
-        const user = await ctx.db.query("users").filter((q) =>q.eq(q.field('email'), args.email)).collect()
-        return user[0];
+        const result = await ctx.db.patch(args.userId,{
+            token:args.token
+        });
+        return result;
     }
 })

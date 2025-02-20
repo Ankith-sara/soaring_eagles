@@ -9,26 +9,29 @@ import { useConvex } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { SidebarProvider } from "@/components/ui/sidebar";
 import AppSideBar from "@/components/custom/AppSideBar";
+import { PayPalScriptProvider } from "@paypal/react-paypal-js";
+import { ActionContext } from "@/context/ActionContext";
+import { useRouter } from "next/navigation";
 
 function Provider({ children }) {
     const [messages, setMessages] = useState([]);
     const [userDetail, setUserDetail] = useState(null);
+    const [action, setAction] = useState(null);
+    const router = useRouter();
     const convex = useConvex();
 
     const IsAuthenticated = async () => {
         if (typeof window !== "undefined") {
             const user = JSON.parse(localStorage.getItem("user"));
-            if (user?.email) {
-                try {
-                    const result = await convex.query(api.users.GetUser, {
-                        email: user?.email
-                    });
-                    setUserDetail(result);
-                    console.log(result);
-                } catch (error) {
-                    console.error("Error fetching user:", error);
-                }
+            if (!user) {
+                router.push('/'); 
+                return;
             }
+            const result = await convex.query(api.users.getUser, {
+                email: user.email
+            });
+            setUserDetail(result);
+            console.log("User Details:", result);
         }
     };
 
@@ -38,23 +41,26 @@ function Provider({ children }) {
 
     return (
         <GoogleOAuthProvider clientId={process.env.NEXT_PUBLIC_GOOGLE_AUTH_CLIENT_ID_KEY || ""}>
-            <UserDetailContext.Provider value={{ userDetail, setUserDetail }}>
-                <MessagesContext.Provider value={{ messages, setMessages }}>
-                    <NextThemesProvider
-                        attribute="class"
-                        defaultTheme="dark"
-                        enableSystem
-                        disableTransitionOnChange
-                    >
-                        <Header />
-                        <SidebarProvider defaultOpen={false}>
-                            <AppSideBar />
-                            {children}
-                        </SidebarProvider>
-
-                    </NextThemesProvider>
-                </MessagesContext.Provider>
-            </UserDetailContext.Provider>
+            <PayPalScriptProvider options={{ clientId: process.env.NEXT_PUBLIC_PAYPAL_CLIENT_ID }}>
+                <UserDetailContext.Provider value={{ userDetail, setUserDetail }}>
+                    <MessagesContext.Provider value={{ messages, setMessages }}>
+                        <ActionContext.Provider value={{ action, setAction }}>
+                            <NextThemesProvider
+                                attribute="class"
+                                defaultTheme="dark"
+                                enableSystem
+                                disableTransitionOnChange
+                            >
+                                <SidebarProvider defaultOpen={false}>
+                                    <Header />
+                                    <AppSideBar />
+                                    {children}
+                                </SidebarProvider>
+                            </NextThemesProvider>
+                        </ActionContext.Provider>
+                    </MessagesContext.Provider>
+                </UserDetailContext.Provider>
+            </PayPalScriptProvider>
         </GoogleOAuthProvider>
     );
 }

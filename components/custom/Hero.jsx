@@ -24,6 +24,10 @@ function Hero() {
             setOpenDialog(true);
             return;
         }
+        if (userDetail?.token<10){
+            toast("You don't have enough token!")
+            return;
+        }
 
         setIsLoading(true);
         const msg = {
@@ -52,7 +56,7 @@ function Hero() {
     };
 
     return (
-        <div className="flex flex-col items-center justify-end px-4 mt-16 xl:mt-24 max-w-6xl mx-auto">
+        <div className="flex flex-col items-center justify-center h-screen max-w-6xl px-4 mt-12">
             <div className="flex items-center gap-2 mb-4">
                 <Sparkles className="h-6 w-6 text-blue-500" />
                 <span className="px-3 py-1 text-sm bg-blue-500/10 text-blue-500 rounded-full">

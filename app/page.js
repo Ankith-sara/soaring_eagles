@@ -4,7 +4,7 @@ import Image from "next/image";
 
 export default function Home() {
   return (
-    <div>
+    <div className="flex items-center justify-center mx-auto">
       <Hero />
     </div>
   );
